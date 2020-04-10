@@ -20,7 +20,7 @@ Add directories where you put your projects into `config.json` file (absolute pa
 Add this snippet into your `~/.zshrc` or `~/.bashrc`
 ```bash
 prj () {
-    cd $(<path to your tool>/project-finder.py $1 3>&1 1>$(tty) 2>/dev/null)
+    cd $(python path_to_your_tool/project-finder.py $1 3>&1 1>$(tty) 2>/dev/null)
 }
 ```
 
