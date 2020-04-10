@@ -18,11 +18,7 @@ else:
 
 projects = []
 for folder in search_space:
-    projects += glob.glob(folder)
-
-projects += glob.glob(os.getcwd())
-projects += glob.glob(os.path.join(os.getcwd(), "*"))
-projects += glob.glob(os.path.join(os.getcwd(), "*", "*"))
+    projects += glob.glob(os.path.abspath(folder))
 
 class MyCustomCompleter(Completer):
     def get_completions(self, document, complete_event):
