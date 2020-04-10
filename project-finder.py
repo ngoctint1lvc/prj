@@ -16,10 +16,13 @@ if len(sys.argv) >= 2:
 else:
     pattern = ""
 
-projects = search_space.copy()
+projects = []
 for folder in search_space:
-    projects += glob.glob(os.path.join(folder, "*"))
-    projects += glob.glob(os.path.join(folder, "*", "*"))
+    projects += glob.glob(folder)
+
+projects += glob.glob(os.getcwd())
+projects += glob.glob(os.path.join(os.getcwd(), "*"))
+projects += glob.glob(os.path.join(os.getcwd(), "*", "*"))
 
 class MyCustomCompleter(Completer):
     def get_completions(self, document, complete_event):

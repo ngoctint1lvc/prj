@@ -8,11 +8,12 @@ Clone this repo
 git clone https://github.com/ngoctint1lvc/prj.git
 ```
 
-Add `config.json` file
+Add directories where you put your projects into `config.json` file (absolute path)
 ```json
 [
-    "path1", // directories in where you put your projects
-    "path2"
+    "/path1",
+    "/path1/*",
+    "/path2/*"
 ]
 ```
 
