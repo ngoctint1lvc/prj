@@ -1,11 +1,13 @@
 import sys
 import os
-import glob
+import glob2
 from fuzzywuzzy import process, fuzz
+from fuzzywuzzy.string_processing import StringProcessor
 from prompt_toolkit import prompt
 from prompt_toolkit.completion import Completer, Completion
 import json
 import argparse
+import re
 
 def debug(msg):
     global verbose
@@ -21,13 +23,24 @@ def generateSearchSpacePattern(search_space, maxDepth):
                 result.append(os.path.join(absDir, "/".join(["*"] * (i + 1))))
     return result
 
+processor_regex = re.compile(r"(?ui)[^\w\-_./\\]")
+def query_processor(s, force_ascii=False):
+    global processor_regex
+    # Keep only letters, numbers and some special character in path
+    string_out = processor_regex.sub(" ", s)
+    # Force into lowercase.
+    string_out = StringProcessor.to_lower_case(string_out)
+    # Remove leading and trailing whitespaces.
+    string_out = StringProcessor.strip(string_out)
+    return string_out
+
 class MyCustomCompleter(Completer):
     def get_completions(self, document, complete_event):
         global limitResult, projects, verbose
 
         # skip search with empty line
         if document.current_line:
-            results = process.extract(document.current_line, projects, limit=limitResult, scorer=fuzz.partial_ratio)
+            results = process.extract(document.current_line, projects, limit=limitResult, scorer=fuzz.partial_ratio, processor=query_processor)
         else:
             results = []
         
@@ -45,6 +58,8 @@ parser.add_argument('-d', '--max-depth', dest='maxDepth', type=int, default=3,
                     help='maximum depth to search (only affected when providing searchDir arguments)')
 parser.add_argument('-l', '--limit', dest='limit', type=int, default=40,
                     help='limit number of results')
+parser.add_argument('-H', '--hidden', dest='show_hidden', action="store_true",
+                    help='show hidden files and directories')
 parser.add_argument('-v', '--verbose', dest='verbose', action="store_true",
                     help='verbosity (for debugging purpose)')
 
@@ -60,6 +75,7 @@ configFile = args.config
 maxDepth = args.maxDepth
 limitResult = args.limit
 verbose = args.verbose
+show_hidden = args.show_hidden
 
 debug(f"Argument: {args.__dict__}")
 
@@ -74,7 +90,7 @@ debug(f"Search space: {search_space}")
 
 projects = []
 for folder in search_space:
-    projects += glob.glob(os.path.abspath(folder), recursive=True)
+    projects += glob2.glob(os.path.abspath(folder), include_hidden=show_hidden)
 
 debug(f"Number of projects: {len(projects)}")
 
