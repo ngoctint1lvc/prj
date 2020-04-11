@@ -8,6 +8,7 @@ from prompt_toolkit.completion import Completer, Completion
 import json
 import argparse
 import re
+from pprint import pformat
 
 def debug(msg):
     global verbose
@@ -77,22 +78,23 @@ limitResult = args.limit
 verbose = args.verbose
 show_hidden = args.show_hidden
 
-debug(f"Argument: {args.__dict__}")
+debug(f"Argument: {pformat(args)}")
 
 search_space = generateSearchSpacePattern(search_space, maxDepth)
 
 if len(search_space) <= 0:
     configFile = args.config or os.path.join(os.path.dirname(sys.argv[0]), "config.json")
+    debug(f"Load config file from: {configFile}")
     with open(os.path.abspath(configFile), 'r') as fd:
         search_space = json.loads(fd.read())
 
-debug(f"Search space: {search_space}")
+debug(f"Search space: {pformat(search_space)}")
 
 projects = []
 for folder in search_space:
     projects += glob2.glob(os.path.abspath(folder), include_hidden=show_hidden)
 
-debug(f"Number of projects: {len(projects)}")
+debug(f"Number of scanned projects: {len(projects)}")
 
 complete_in_thread = True if len(projects) > 2000 else False
 debug(f"Thread mode: {complete_in_thread}")
