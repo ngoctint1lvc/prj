@@ -1,2 +1,3 @@
 fuzzywuzzy[speedup]
 prompt_toolkit
+argparse
