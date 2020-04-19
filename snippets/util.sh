@@ -1,6 +1,14 @@
+local PRJ_DIR=$(readlink -f $(dirname $0)/..)
+
 # nt tool
 ntfind () {
-    echo -n $(/usr/bin/python3 /your_path/prj/project-finder.py $@ 3>&1 1>$(tty) 2>/dev/null)
+    local python_bin="$(which python3)"
+    if [ -f "$python_bin" ]; then
+        python_bin="$(which python)"
+    fi
+
+    local project_finder_tool="$(readlink -f $PRJ_DIR/project-finder.py)"
+    echo -n $($python_bin $project_finder_tool $@ 3>&1 1>$(tty) 2>/dev/null)
 }
 
 ntcode () {
@@ -10,5 +18,11 @@ ntcode () {
 
 prj () {
     local dir=$(ntfind $@);
-    [ -d "$dir" ] && cd $dir
+    if [ -d "$dir" ]
+    then
+        cd $dir
+    elif [ -d "$(dirname $dir 2>/dev/null)" ]
+    then
+        cd $(dirname $dir)
+    fi
 }

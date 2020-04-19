@@ -14,6 +14,13 @@ def debug(msg):
     global verbose
     if verbose: print(f"[DEBUG] {msg}")
 
+def remove_duplicated(lst: list, dup_checking_fn = lambda item, lst: item in lst):
+    result = []
+    for item in lst:
+        if dup_checking_fn(item, lst):
+            result.append(item)
+    return result
+
 def generateSearchSpacePattern(search_space, maxDepth):
     result = []
     for dir in search_space:
@@ -35,17 +42,36 @@ def query_processor(s, force_ascii=False):
     string_out = StringProcessor.strip(string_out)
     return string_out
 
+def custom_scorer(s1, s2):
+    return 0.8*fuzz.partial_ratio(s1, s2) + 0.2*fuzz.token_sort_ratio(s1, s2)
+
 class MyCustomCompleter(Completer):
+
     def get_completions(self, document, complete_event):
         global limitResult, projects, verbose
+        global fileOnly, dirOnly
 
         # skip search with empty line
         if document.current_line:
-            results = process.extract(document.current_line, projects, limit=limitResult, scorer=fuzz.partial_ratio, processor=query_processor)
+            # if current line is a valid path, list all files inside it with full 100 score
+            subfiles = list(map(lambda i: (i, 100), glob2.glob(os.path.join(document.current_line, "*"))))
+
+            fuzzyResult = process.extract(document.current_line, projects, scorer=custom_scorer, limit=limitResult, processor=query_processor)
+            
+            if len(subfiles) > 0:
+                fuzzyResult = remove_duplicated(fuzzyResult, lambda item, lst: item in subfiles)
+            
+            results = subfiles + fuzzyResult
         else:
             results = []
         
         for result in results:
+            if dirOnly and not os.path.isdir(result[0]):
+                continue
+
+            if fileOnly and not os.path.isfile(result[0]):
+                continue
+
             display_meta = f"Score: {result[1]}" if verbose else ""
             yield Completion(result[0], start_position=-len(document.current_line), display_meta=display_meta)
                 
@@ -63,6 +89,10 @@ parser.add_argument('-H', '--hidden', dest='show_hidden', action="store_true",
                     help='show hidden files and directories')
 parser.add_argument('-v', '--verbose', dest='verbose', action="store_true",
                     help='verbosity (for debugging purpose)')
+parser.add_argument('--file-only', dest='fileOnly', action="store_true",
+                    help='only list file in output')
+parser.add_argument('--dir-only', dest='dirOnly', action="store_true",
+                    help='only list directory in output')
 
 args = parser.parse_args()
 
@@ -77,6 +107,8 @@ maxDepth = args.maxDepth
 limitResult = args.limit
 verbose = args.verbose
 show_hidden = args.show_hidden
+fileOnly = args.fileOnly
+dirOnly = args.dirOnly
 
 debug(f"Argument: {pformat(args)}")
 
@@ -86,7 +118,11 @@ if len(search_space) <= 0:
     configFile = args.config or os.path.join(os.path.dirname(sys.argv[0]), "config.json")
     debug(f"Load config file from: {configFile}")
     with open(os.path.abspath(configFile), 'r') as fd:
-        search_space = json.loads(fd.read())
+        search_space = list(map(lambda dir: os.path.abspath(dir), json.loads(fd.read())))
+
+# remove duplicated values
+search_space = list(map(lambda path: os.path.realpath(path), search_space))
+search_space = remove_duplicated(search_space)
 
 debug(f"Search space: {pformat(search_space)}")
 

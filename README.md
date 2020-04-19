@@ -5,59 +5,38 @@ Quickly navigate between your projects
 
 Clone this repo and install missing packages
 ```
-git clone https://github.com/ngoctint1lvc/prj.git
-cd prj
+git clone https://github.com/ngoctint1lvc/prj.git ~/.prj
+cd ~/.prj
 pip3 install -r requirement.txt
 ```
 
-Add directories where you put your projects into `config.json` file (absolute path or relative path)
+Add directories where you put your projects into `~/.prj/config.json` file (absolute path or relative path)
 ```json
 [
-    "/path1",
-    "/path1/*",
-    "/path2/*",
-    "./*"
+    "/home/",
+    "/home/*",
+    "/home/*/*",
+    "/home/*/*/*"
 ]
 ```
 
-Add this snippet into your `~/.zshrc` or `~/.bashrc` (modify your corrected path)
+Run this command if you are using bash shell
 ```bash
-# nt tool
-ntfind () {
-    echo -n $(/usr/bin/python3 /your_path/prj/project-finder.py $@ 3>&1 1>$(tty) 2>/dev/null)
-}
-
-ntcode () {
-    local dir=$(ntfind $@);
-    [ -e "$dir" ] && code $dir
-}
-
-prj () {
-    local dir=$(ntfind $@);
-    [ -d "$dir" ] && cd $dir
-}
+echo 'source ~/.prj/snippets/util.sh' >> ~/.bashrc
+source ~/.bashrc
 ```
 
-If you are using fish shell, add this snippet to `~/.config/fish/config.fish` (create if file not exists)
+Similarly with zsh shell
+```zsh
+echo 'source ~/.prj/snippets/util.zsh' >> ~/.zshrc
+source ~/.zshrc
+```
+
+If you are using fish shell
 ```fish
-# nt tool
-function ntfind
-    echo -n (/usr/bin/python3 /your_path/prj/project-finder.py $argv 3>&1 1>(tty) 2>/dev/null)
-end
-
-# only work if you installed vscode
-function ntcode
-    set -l dir (ntfind $argv);
-    [ -e "$dir" ] && code $dir
-end
-
-function prj
-    set -l dir (ntfind $argv);
-    [ -d "$dir" ] && cd $dir
-end
+echo 'source ~/.prj/snippets/util.fish' >> ~/.config/fish/config.fish
+source ~/.config/fish/config.fish
 ```
-
-Add more useful functions for your need!
 
 ## Example usage
 [![asciicast](https://asciinema.org/a/318215.svg)](https://asciinema.org/a/318215)
