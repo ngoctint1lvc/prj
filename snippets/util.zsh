@@ -1,4 +1,4 @@
-local PRJ_DIR=$(readlink $(dirname $0)/..)
+local PRJ_DIR="$(readlink -f $(dirname $0)/..)"
 
 # nt tool
 ntfind () {

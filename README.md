@@ -4,10 +4,16 @@ Quickly navigate between your projects
 ## How to install
 
 Clone this repo and install missing packages
-```
+```bash
 git clone https://github.com/ngoctint1lvc/prj.git ~/.prj
 cd ~/.prj
 pip3 install -r requirement.txt
+```
+
+For Mac user, readlink is incompatible with gnu readlink, simply install coreutils to fix this problem
+```bash
+brew install coreutils
+export PATH=/usr/local/opt/coreutils/libexec/gnubin:$PATH
 ```
 
 Add directories where you put your projects into `~/.prj/config.json` file (absolute path or relative path)
