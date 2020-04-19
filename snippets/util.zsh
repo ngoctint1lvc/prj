@@ -1,9 +1,13 @@
-local PRJ_DIR=$(readlink -f $(dirname $0)/..)
+local PRJ_DIR=$(readlink $(dirname $0)/..)
 
 # nt tool
 ntfind () {
     local python_bin="$(which python3)"
-    local project_finder_tool="$(readlink -f $PRJ_DIR/project-finder.py)"
+    if [ ! -f "$python_bin" ]; then
+        python_bin="$(which python)"
+    fi
+
+    local project_finder_tool="$PRJ_DIR/project-finder.py"
     echo -n $($python_bin $project_finder_tool $@ 3>&1 1>$(tty) 2>/dev/null)
 }
 

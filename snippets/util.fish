@@ -1,6 +1,10 @@
 # nt tool
 function ntfind
     set -l python_bin (which python3)
+    if test ! -f $python_bin
+        set -l python_bin (which python)
+    end
+
     set -l CURRENT_DIR (dirname (status -f))
     set -l project_finder_tool (readlink -f $CURRENT_DIR/../project-finder.py)
     echo -n ($python_bin $project_finder_tool $argv 3>&1 1>(tty) 2>/dev/null)

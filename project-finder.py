@@ -117,6 +117,7 @@ search_space = generateSearchSpacePattern(search_space, maxDepth)
 if len(search_space) <= 0:
     configFile = args.config or os.path.join(os.path.dirname(sys.argv[0]), "config.json")
     debug(f"Load config file from: {configFile}")
+
     with open(os.path.abspath(configFile), 'r') as fd:
         search_space = list(map(lambda dir: os.path.abspath(dir), json.loads(fd.read())))
 
