@@ -3,17 +3,16 @@ Quickly navigate between your projects
 
 ## How to install
 
-Clone this repo and install missing packages
+Run this command for auto setup
 ```bash
-git clone https://github.com/ngoctint1lvc/prj.git ~/.prj
-cd ~/.prj
-pip3 install -r requirement.txt
+curl https://raw.githubusercontent.com/ngoctint1lvc/prj/master/setup.sh | bash -
 ```
 
 For Mac user, readlink is incompatible with gnu readlink, simply install coreutils to fix this problem
 ```bash
 brew install coreutils
-export PATH=/usr/local/opt/coreutils/libexec/gnubin:$PATH
+echo 'export PATH=/usr/local/opt/coreutils/libexec/gnubin:$PATH' >> ~/.bashrc
+source ~/.bashrc
 ```
 
 Add directories where you put your projects into `~/.prj/config.json` file (absolute path or relative path)
@@ -24,24 +23,6 @@ Add directories where you put your projects into `~/.prj/config.json` file (abso
     "/home/*/*",
     "/home/*/*/*"
 ]
-```
-
-Run this command if you are using bash shell
-```bash
-echo 'source ~/.prj/snippets/util.sh' >> ~/.bashrc
-source ~/.bashrc
-```
-
-Similarly with zsh shell
-```zsh
-echo 'source ~/.prj/snippets/util.zsh' >> ~/.zshrc
-source ~/.zshrc
-```
-
-If you are using fish shell
-```fish
-echo 'source ~/.prj/snippets/util.fish' >> ~/.config/fish/config.fish
-source ~/.config/fish/config.fish
 ```
 
 ## Example usage
