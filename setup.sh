@@ -25,7 +25,6 @@ echo "[+] Auto load util script in your shell";
 if [[ "$default_shell" =~ "zsh" ]]; then
     if [ -z "$(grep 'source ~/.prj/snippets/util.zsh' ~/.zshrc)" ]; then
         echo 'source ~/.prj/snippets/util.zsh' >> ~/.zshrc
-        source ~/.zshrc
     fi
 elif [[ "$default_shell" =~ "fish" ]]; then
     if [ ! -d ~/.config/fish ]; then
@@ -38,12 +37,10 @@ elif [[ "$default_shell" =~ "fish" ]]; then
     
     if [ -z "$(grep 'source ~/.prj/snippets/util.fish' ~/.config/fish/config.fish)" ]; then
         echo 'source ~/.prj/snippets/util.fish' >> ~/.config/fish/config.fish
-        source ~/.config/fish/config.fish
     fi
 else
     if [ -z "$(grep 'source ~/.prj/snippets/util.sh' ~/.bashrc)" ]; then
         echo 'source ~/.prj/snippets/util.sh' >> ~/.bashrc
-        source ~/.bashrc
     fi
 fi
 
