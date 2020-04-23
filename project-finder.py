@@ -9,6 +9,7 @@ import json
 import argparse
 import re
 from pprint import pformat
+import time
 
 def debug(msg):
     global verbose
@@ -43,7 +44,18 @@ def query_processor(s, force_ascii=False):
     return string_out
 
 def custom_scorer(s1, s2):
-    return 0.8*fuzz.partial_ratio(s1, s2) + 0.2*fuzz.token_sort_ratio(s1, s2)
+    max_mtime = 30*24*60*60 # 1 month ago
+    try:
+        mtime = time.time() - os.path.getmtime(s2)
+    except:
+        mtime = max_mtime
+    
+    mtime = max_mtime if mtime > max_mtime else mtime
+
+    # get mtime percentage
+    mtime_score = (1 - mtime/max_mtime) * 100
+    
+    return 0.9*fuzz.partial_ratio(s1, s2) + 0.1*mtime_score
 
 class MyCustomCompleter(Completer):
 
