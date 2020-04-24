@@ -44,18 +44,28 @@ def query_processor(s, force_ascii=False):
     return string_out
 
 def custom_scorer(s1, s2):
-    max_mtime = 30*24*60*60 # 1 month ago
+    global last_access_list
+
+    # calculate modified time score
+    max_mtime = 3*30*24*60*60 # 1 month ago
     try:
         mtime = time.time() - os.path.getmtime(s2)
     except:
         mtime = max_mtime
     
     mtime = max_mtime if mtime > max_mtime else mtime
-
-    # get mtime percentage
     mtime_score = (1 - mtime/max_mtime) * 100
+
+    # calculate last access score
+    last_access_score = 0
+    for i, directory in enumerate(last_access_list):
+        if s2 == directory:
+            length = len(last_access_list)
+            last_access_score = (length - i)/length*100
+            # print(last_access_score, s2)
+            break
     
-    return 0.9*fuzz.partial_ratio(s1, s2) + 0.1*mtime_score
+    return 0.8*fuzz.partial_ratio(s1, s2) + 0.1*last_access_score + 0.1*mtime_score
 
 class MyCustomCompleter(Completer):
 
@@ -145,6 +155,15 @@ for folder in search_space:
 
 debug(f"Number of scanned projects: {len(projects)}")
 
+# fetch last access list
+last_access_list = []
+LAST_ACCESS_LIST_MAX_LENGTH = 30
+last_access_file = os.path.join(os.path.dirname(sys.argv[0]), ".last_access.json")
+if os.path.isfile(last_access_file):
+    with open(last_access_file, "r") as fd:
+        last_access_list = json.loads(fd.read())
+    debug(f"Fetched last access list: {last_access_list}")
+
 complete_in_thread = True if len(projects) > 2000 else False
 debug(f"Thread mode: {complete_in_thread}")
 directory = prompt('> ', completer=MyCustomCompleter(), complete_in_thread=complete_in_thread)
@@ -154,3 +173,18 @@ try:
         fd.write(bytes(directory, 'utf-8'))
 except:
     print(directory)
+
+# if search result is valid add it to last_access_list for caching
+if os.path.exists(directory):
+    with open(last_access_file, "w+") as fd:
+        try:
+            last_access_list.remove(directory)
+        except:
+            pass
+
+        last_access_list.insert(0, directory)
+
+        # keep only 30 directories as maximum value
+        last_access_list = last_access_list[:LAST_ACCESS_LIST_MAX_LENGTH]
+        fd.write(json.dumps(last_access_list))
+        debug(f"Updated last access list: {last_access_list}")
