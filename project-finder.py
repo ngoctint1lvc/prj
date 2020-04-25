@@ -10,6 +10,7 @@ import argparse
 import re
 from pprint import pformat
 import time
+import random
 
 def debug(msg):
     global verbose
@@ -58,12 +59,11 @@ def custom_scorer(s1, s2):
 
     # calculate last access score
     last_access_score = 0
-    for i, directory in enumerate(last_access_list):
-        if s2 == directory:
-            length = len(last_access_list)
-            last_access_score = (length - i)/length*100
-            # print(last_access_score, s2)
-            break
+    freq_sum = sum(map(lambda item: item[0], last_access_list))
+    access_freq = next((x[0] for x in last_access_list if s2 == x[1]), 0)
+    last_access_score = access_freq/freq_sum*100 if freq_sum > 0 else 0
+
+    # if last_access_score > 0: print(last_access_score, s2)
     
     return 0.8*fuzz.partial_ratio(s1, s2) + 0.1*last_access_score + 0.1*mtime_score
 
@@ -177,14 +177,20 @@ except:
 # if search result is valid add it to last_access_list for caching
 if os.path.exists(directory):
     with open(last_access_file, "w+") as fd:
-        try:
-            last_access_list.remove(directory)
-        except:
-            pass
+        found = False
+        for item in last_access_list:
+            if directory == item[1]:
+                found = True
+                # increment access frequency
+                item[0] += 1
+                break
 
-        last_access_list.insert(0, directory)
-
-        # keep only 30 directories as maximum value
-        last_access_list = last_access_list[:LAST_ACCESS_LIST_MAX_LENGTH]
+        if not found:
+            # keep only 30 directories as maximum value
+            if len(last_access_list) >= LAST_ACCESS_LIST_MAX_LENGTH:
+                item = random.choice(last_access_list)
+                last_access_list.remove(item)
+            last_access_list.append([1, directory])
+        
         fd.write(json.dumps(last_access_list))
         debug(f"Updated last access list: {last_access_list}")
