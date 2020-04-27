@@ -62,7 +62,4 @@ else
     echo "[+] Keeping your config file";
 fi
 
-echo "[+] Remove last access tracking files";
-rm -f ~/.prj/.last_access.json;
-
 echo "[+] Done! Try restarting your shell"

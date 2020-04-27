@@ -9,7 +9,6 @@ import json
 import argparse
 import re
 from pprint import pformat
-import time
 import random
 
 def debug(msg):
@@ -47,16 +46,6 @@ def query_processor(s, force_ascii=False):
 def custom_scorer(s1, s2):
     global last_access_list
 
-    # calculate modified time score
-    max_mtime = 3*30*24*60*60 # 1 month ago
-    try:
-        mtime = time.time() - os.path.getmtime(s2)
-    except:
-        mtime = max_mtime
-    
-    mtime = max_mtime if mtime > max_mtime else mtime
-    mtime_score = (1 - mtime/max_mtime) * 100
-
     # calculate last access score
     last_access_score = 0
     freq_sum = sum(map(lambda item: item[0], last_access_list))
@@ -65,7 +54,7 @@ def custom_scorer(s1, s2):
 
     # if last_access_score > 0: print(last_access_score, s2)
     
-    return 0.8*fuzz.partial_ratio(s1, s2) + 0.1*last_access_score + 0.1*mtime_score
+    return 0.8*fuzz.partial_ratio(s1, s2) + 0.2*last_access_score
 
 class MyCustomCompleter(Completer):
 
@@ -76,13 +65,17 @@ class MyCustomCompleter(Completer):
         # skip search with empty line
         if document.current_line:
             # if current line is a valid path, list all files inside it with full 100 score
-            subfiles = list(map(lambda i: (i, 100), glob2.glob(os.path.join(document.current_line, "*"))))
+            path = document.current_line
+            subfiles = []
+            if os.path.isdir(path):
+                path = os.path.abspath(path)
+                subfiles = [(path, 100)] + list(map(lambda i: (i, 100), glob2.glob(os.path.join(path, "*"))))
 
             fuzzyResult = process.extract(document.current_line, projects, scorer=custom_scorer, limit=limitResult, processor=query_processor)
             
             if len(subfiles) > 0:
-                fuzzyResult = remove_duplicated(fuzzyResult, lambda item, lst: item in subfiles)
-            
+                fuzzyResult = list(filter(lambda item: item[0] not in map(lambda i: i[0], subfiles), fuzzyResult))
+
             results = subfiles + fuzzyResult
         else:
             results = []
