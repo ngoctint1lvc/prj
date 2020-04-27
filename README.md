@@ -3,7 +3,7 @@ Quickly navigate between your projects
 
 ## How to install
 
-Run this command for auto setup
+Run this command for auto setup (this script may failed for non Linux os)
 ```bash
 curl https://raw.githubusercontent.com/ngoctint1lvc/prj/master/setup.sh | bash -
 ```
