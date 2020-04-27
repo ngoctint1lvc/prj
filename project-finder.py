@@ -60,23 +60,30 @@ class MyCustomCompleter(Completer):
 
     def get_completions(self, document, complete_event):
         global limitResult, projects, verbose
-        global fileOnly, dirOnly
+        global fileOnly, dirOnly, show_hidden
 
         # skip search with empty line
         if document.current_line:
-            # if current line is a valid path, list all files inside it with full 100 score
-            path = document.current_line
-            subfiles = []
-            if os.path.isdir(path):
-                path = os.path.abspath(path)
-                subfiles = [(path, 100)] + list(map(lambda i: (i, 100), glob2.glob(os.path.join(path, "*"))))
+            if os.path.isdir(document.current_line):
+                # this is the best case
+                # if current line is a valid path, list all files inside it with full 100 score
+                search_path = os.path.abspath(document.current_line)
+                results = [(search_path, 100)] + list(map(lambda i: (i, 100), glob2.glob(os.path.join(search_path, "*"), include_hidden=show_hidden)))
+            elif os.path.isdir(os.path.dirname(document.current_line)):
+                # if current line is a path prefix, try to expand it with glob
+                # For example: /home/user/something
+                # /home/user is a valid path, something is searching keyword
+                # We will only search in /home/user/* and /home/user/*/*
+                search_path = os.path.abspath(os.path.dirname(document.current_line))
 
-            fuzzyResult = process.extract(document.current_line, projects, scorer=custom_scorer, limit=limitResult, processor=query_processor)
-            
-            if len(subfiles) > 0:
-                fuzzyResult = list(filter(lambda item: item[0] not in map(lambda i: i[0], subfiles), fuzzyResult))
+                search_space = []
+                search_space += glob2.glob(os.path.join(search_path, "*"), include_hidden=show_hidden)
+                search_space += glob2.glob(os.path.join(search_path, "*", "*"), include_hidden=show_hidden)
 
-            results = subfiles + fuzzyResult
+                results = process.extract(document.current_line, search_space, scorer=custom_scorer, limit=limitResult, processor=query_processor)
+            else:
+                # the worst case, we must search full projects
+                results = process.extract(document.current_line, projects, scorer=custom_scorer, limit=limitResult, processor=query_processor)
         else:
             results = []
         
