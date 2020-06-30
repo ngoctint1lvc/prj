@@ -1,6 +1,6 @@
 #!/bin/bash
 
-default_shell=$(grep $USER /etc/passwd | cut -f 7 -d ":")
+default_shell=$(grep "^$USER" /etc/passwd | cut -f 7 -d ":")
 
 echo "[+] Cloning repository";
 if [ ! -e ~/.prj ]; then
