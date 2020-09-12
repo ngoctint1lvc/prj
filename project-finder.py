@@ -168,6 +168,10 @@ complete_in_thread = True if len(projects) > 2000 else False
 debug(f"Thread mode: {complete_in_thread}")
 directory = prompt('> ', completer=MyCustomCompleter(), complete_in_thread=complete_in_thread)
 
+# if current file not exists, try directory
+if os.path.isfile(directory):
+    directory = os.path.dirname(directory)
+
 try:
     with os.fdopen(3, 'wb', 0) as fd:
         fd.write(bytes(directory, 'utf-8'))
