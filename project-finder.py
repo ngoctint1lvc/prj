@@ -49,7 +49,7 @@ def custom_scorer(s1, s2):
     # calculate last access score
     last_access_score = 0
     freq_sum = sum(map(lambda item: item[0], last_access_list))
-    access_freq = next((x[0] for x in last_access_list if s2 == x[1]), 0)
+    access_freq = next((x[0] for x in last_access_list if s2 == str.lower(x[1])), 0)
     last_access_score = access_freq/freq_sum*100 if freq_sum > 0 else 0
 
     # if last_access_score > 0: print(last_access_score, s2)
